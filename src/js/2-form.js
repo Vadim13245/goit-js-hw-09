@@ -1,40 +1,33 @@
-const form = document.querySelector('.feedback-form');
+const KEY_MESSAGE = "feedback-form-state";
+const formRef = document.querySelector('form');
 
-const saveForm = () => {
-  const formData = {
-    email: form.elements.email.value.trim(),
-    message: form.elements.message.value.trim(),
-  };
-  localStorage.setItem('feedback-form-state', JSON.stringify(formData));
-};
-
-const loadForm = () => {
-  const saveData = localStorage.getItem('feedback-form-state');
-  if (saveData) {
-    const { email, message } = JSON.parse(saveData);
-    form.elements.email.value = email;
-    form.elements.message.value = message;
-  }
-};
-
-form.addEventListener('input', saveForm);
-
-window.addEventListener('load', loadForm);
-
-form.addEventListener('submit', e => {
-  e.preventDefault();
-  localStorage.removeItem('feedback-form-state');
-  if (form.elements.email.value === '') {
-    alert('Please enter your email');
-  }
-  if (form.elements.message.value === '') {
-    alert('Please enter your message');
-  }
-
-  console.log({
-    email: form.elements.email.value.trim(),
-    message: form.elements.message.value.trim(),
-  });
-
-  form.reset();
+formRef.addEventListener('submit', function(event) {
+    event.preventDefault();
+    if (formRef.elements.email.value.trim() === '' || formRef.elements.message.value.trim() === '') {
+        alert('Please fill out all form fields');
+        return;
+    }
+    const objMessage = JSON.stringify({ email: formRef.elements.email.value.trim(), message: formRef.elements.message.value.trim() });
+    localStorage.setItem(KEY_MESSAGE, objMessage);
+    formRef.reset();
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+    const objMessage = JSON.parse(localStorage.getItem(KEY_MESSAGE)) || {};
+    formRef.elements.email.value = objMessage.email || '';
+    formRef.elements.message.value = objMessage.message || '';
+});
+
+formRef.addEventListener('input', addLocalStorage);
+function addLocalStorage() {
+    const objMessage = JSON.stringify({ email: formRef.elements.email.value.trim(), message: formRef.elements.message.value.trim() });
+    localStorage.setItem(KEY_MESSAGE, objMessage);
+};
+
+function removeLocalStorage() {
+    localStorage.removeItem(KEY_MESSAGE);
+    formRef.elements.email.value = '';
+    formRef.elements.message.value = '';
+};
+
+formRef.addEventListener('reset', removeLocalStorage);
